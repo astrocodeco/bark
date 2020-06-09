@@ -15,9 +15,11 @@ public extension Logger.Metadata {
             options.insert(.sortedKeys)
         }
 
+        #if !os(Linux)
         if #available(OSX 10.15, iOS 13, *) {
             options.insert(.withoutEscapingSlashes)
         }
+        #endif
 
         do {
             jsonData = try JSONSerialization.data(withJSONObject: mapValues(\.description), options: options)

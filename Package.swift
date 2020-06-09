@@ -5,7 +5,6 @@ import PackageDescription
 
 let package = Package(
     name: "Bark",
-    platforms: [.iOS(.v11), .macOS(.v10_13)],
     products: [
         .library(name: "Bark", targets: ["Bark"]),
     ],
