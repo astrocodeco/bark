@@ -21,7 +21,7 @@ public extension Logger {
                  error: @autoclosure () -> Error? = nil,
                  metadata: @autoclosure () -> Logger.Metadata? = nil,
                  file: String = #file, function: String = #function, line: UInt = #line) {
-        self.log(level: .warning, message(), metadata: metadata()?.merging(error: error()), file: file, function: function, line: line)
+        self.log(level: .warning, message(), metadata: buildMetadata(base: metadata(), error: error()), file: file, function: function, line: line)
     }
 
     /// Log a message passing with the `Logger.Level.error` log level.
@@ -44,7 +44,7 @@ public extension Logger {
                error: @autoclosure () -> Error? = nil,
                metadata: @autoclosure () -> Logger.Metadata? = nil,
                file: String = #file, function: String = #function, line: UInt = #line) {
-        self.log(level: .error, message(), metadata: metadata()?.merging(error: error()), file: file, function: function, line: line)
+        self.log(level: .error, message(), metadata: buildMetadata(base: metadata(), error: error()), file: file, function: function, line: line)
     }
 
     /// Log a message passing with the `Logger.Level.critical` log level.
@@ -67,7 +67,7 @@ public extension Logger {
                   error: @autoclosure () -> Error? = nil,
                   metadata: @autoclosure () -> Logger.Metadata? = nil,
                   file: String = #file, function: String = #function, line: UInt = #line) {
-        self.log(level: .critical, message(), metadata: metadata()?.merging(error: error()), file: file, function: function, line: line)
+        self.log(level: .critical, message(), metadata: buildMetadata(base: metadata(), error: error()), file: file, function: function, line: line)
     }
 
     /// Log a message passing with the `Logger.Level.critical` log level and trigger Swift.assertionFailure().
@@ -91,7 +91,7 @@ public extension Logger {
                           error: @autoclosure () -> Error? = nil,
                           metadata: @autoclosure () -> Logger.Metadata? = nil,
                           file: String = #file, function: String = #function, line: UInt = #line) {
-        self.log(level: .critical, message(), metadata: metadata()?.merging(error: error()), file: file, function: function, line: line)
+        self.log(level: .critical, message(), metadata: buildMetadata(base: metadata(), error: error()), file: file, function: function, line: line)
         Swift.assertionFailure(message().description)
     }
 
@@ -116,13 +116,17 @@ public extension Logger {
                error: @autoclosure () -> Error? = nil,
                metadata: @autoclosure () -> Logger.Metadata? = nil,
                file: String = #file, function: String = #function, line: UInt = #line) -> Never {
-        self.log(level: .critical, message(), metadata: metadata()?.merging(error: error()), file: file, function: function, line: line)
+        self.log(level: .critical, message(), metadata: buildMetadata(base: metadata(), error: error()), file: file, function: function, line: line)
         fatalError()
+    }
+
+    func buildMetadata(base: Metadata?, error: Error?) -> Metadata? {
+        let built = (base ?? [:]).merging(error: error)
+        return built.isEmpty ? nil : built
     }
 }
 
-// Must be public to satisfy inlinable requirements.
-public extension Logger.Metadata {
+private extension Logger.Metadata {
     /// Add an error value to metadata. Replaces the existing "error" value if there is one.
     func merging(error: Error?) -> Logger.Metadata {
         error.map { self.merging(["error": "\($0)"], uniquingKeysWith: { old, new in new }) } ?? self

@@ -108,4 +108,33 @@ final class LogErrorTests: XCTestCase {
         XCTAssertEqual(critical.level, .critical)
         XCTAssertEqual(critical.metadata?["error"], "\(loggedError)")
     }
+
+    func testLogWithErrorAndNilMetadata() throws {
+        var history: [TestLogHandler.Item] = []
+
+        let logger = Logger(label: "test", factory: {
+            TestLogHandler(label: $0, onLog: { history.append($0) })
+        })
+
+        let message: Logger.Message = "Hello, world!"
+        let loggedError = TestError("Bad")
+
+        logger.warning(message, error: loggedError)
+        logger.error(message, error: loggedError)
+        logger.critical(message, error: loggedError)
+
+        XCTAssertEqual(history.count, 3)
+
+        let warning = history[0]
+        XCTAssertEqual(warning.level, .warning)
+        XCTAssertEqual(warning.metadata?["error"], "\(loggedError)")
+
+        let error = history[1]
+        XCTAssertEqual(error.level, .error)
+        XCTAssertEqual(error.metadata?["error"], "\(loggedError)")
+
+        let critical = history[2]
+        XCTAssertEqual(critical.level, .critical)
+        XCTAssertEqual(critical.metadata?["error"], "\(loggedError)")
+    }
 }
